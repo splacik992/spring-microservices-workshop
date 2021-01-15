@@ -18,6 +18,7 @@ public class MovieCatalogServiceApplication {
     }
 
     @Bean
+    @LoadBalanced
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }

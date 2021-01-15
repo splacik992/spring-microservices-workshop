@@ -1,7 +1,10 @@
 package pl.pali.moviecatalogservice.resources;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,16 +20,17 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/catalog")
+@EnableCircuitBreaker
 public class MovieCatalogResource {
 
+    @LoadBalanced
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
     private WebClient.Builder webClientBuilder;
 
     @RequestMapping("/{userId}")
-//    @HystrixCommand(fallbackMethod = "getFallbackMethod")
+    @HystrixCommand(fallbackMethod = "getFallbackMethod")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
 
 //        WebClient.Builder builder = WebClient.builder();
@@ -43,9 +47,9 @@ public class MovieCatalogResource {
                 .collect(Collectors.toList());
     }
 
-//    public List<CatalogItem> getFallbackMethod(@PathVariable("userId") String userId) {
-//        return Arrays.asList(new CatalogItem("No Movie","",0));
-//    }
+    public List<CatalogItem> getFallbackMethod(@PathVariable("userId") String userId) {
+        return Arrays.asList(new CatalogItem("No Movie","",0));
+    }
 }
 /*
             Movie movie = webClientBuilder.build()
