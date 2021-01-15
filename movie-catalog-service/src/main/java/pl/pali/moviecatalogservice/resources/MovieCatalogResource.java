@@ -36,8 +36,6 @@ public class MovieCatalogResource {
     @Autowired
     UserRatingInfo userRatingInfo;
 
-
-
     @RequestMapping("/{userId}")
     @HystrixCommand
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
