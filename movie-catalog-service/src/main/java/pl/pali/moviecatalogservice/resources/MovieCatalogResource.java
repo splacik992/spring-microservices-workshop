@@ -1,6 +1,7 @@
 package pl.pali.moviecatalogservice.resources;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +11,7 @@ import pl.pali.moviecatalogservice.models.CatalogItem;
 import pl.pali.moviecatalogservice.models.Movie;
 import pl.pali.moviecatalogservice.models.UserRating;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,7 @@ public class MovieCatalogResource {
     private WebClient.Builder webClientBuilder;
 
     @RequestMapping("/{userId}")
+//    @HystrixCommand(fallbackMethod = "getFallbackMethod")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
 
 //        WebClient.Builder builder = WebClient.builder();
@@ -37,11 +40,12 @@ public class MovieCatalogResource {
             //put them all together
             return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
         })
-
                 .collect(Collectors.toList());
-
-
     }
+
+//    public List<CatalogItem> getFallbackMethod(@PathVariable("userId") String userId) {
+//        return Arrays.asList(new CatalogItem("No Movie","",0));
+//    }
 }
 /*
             Movie movie = webClientBuilder.build()

@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication
 @EnableEurekaClient
-@EnableCircuitBreaker
 public class MovieCatalogServiceApplication {
     @Bean
     public WebClient.Builder getWebClientBuilder() {
@@ -19,7 +18,6 @@ public class MovieCatalogServiceApplication {
     }
 
     @Bean
-    @LoadBalanced
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
