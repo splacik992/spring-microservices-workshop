@@ -14,6 +14,8 @@ import pl.pali.moviecatalogservice.models.CatalogItem;
 import pl.pali.moviecatalogservice.models.Movie;
 import pl.pali.moviecatalogservice.models.Rating;
 import pl.pali.moviecatalogservice.models.UserRating;
+import pl.pali.moviecatalogservice.services.MovieInfo;
+import pl.pali.moviecatalogservice.services.UserRatingInfo;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,52 +30,27 @@ public class MovieCatalogResource {
     @Autowired
     private RestTemplate restTemplate;
 
-    private WebClient.Builder webClientBuilder;
+    @Autowired
+    MovieInfo movieInfo;
+
+    @Autowired
+    UserRatingInfo userRatingInfo;
+
+
 
     @RequestMapping("/{userId}")
-    @HystrixCommand(fallbackMethod = "getFallbackMethod")
+    @HystrixCommand
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
-
-//        WebClient.Builder builder = WebClient.builder();
-
-        UserRating ratings = getUserRating(userId);
-
-        return ratings.getUserRating().stream().map(rating -> {
-            //for each movie ID, call movie info service and get details
-            return getCatalogItem(rating);
-        })
+        UserRating ratings = userRatingInfo.getUserRating(userId);
+        return ratings.getUserRating().stream().map(rating -> movieInfo.getCatalogItem(rating))
                 .collect(Collectors.toList());
-    }
-
-    @HystrixCommand(fallbackMethod = "getFallBackCatalogItem")
-    private CatalogItem getCatalogItem(pl.pali.moviecatalogservice.models.Rating rating) {
-        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
-        //put them all together
-        return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
-    }
-
-    private CatalogItem getFallBackCatalogItem(pl.pali.moviecatalogservice.models.Rating rating) {
-        return new CatalogItem("Movie name not found", "", 0);
-    }
-
-    @HystrixCommand(fallbackMethod = "getFallbackUserRating")
-    private UserRating getUserRating(String userId) {
-        return restTemplate.getForObject("http://ratings-data-service/ratingsdata/users/" + userId,
-                UserRating.class);
-    }
-
-    private UserRating getFallbackUserRating(String userId) {
-        UserRating userRating = new UserRating();
-        userRating.setUserId(userId);
-        userRating.setUserRating(Arrays.asList(new Rating("0",0)));
-        return userRating;
-    }
-
-    public List<CatalogItem> getFallbackMethod(@PathVariable("userId") String userId) {
-        return Arrays.asList(new CatalogItem("No Movie", "", 0));
     }
 }
 /*
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+    ----------------------------------------------
             Movie movie = webClientBuilder.build()
                     .get()
                     .uri("http://localhost:8081/movies/")
